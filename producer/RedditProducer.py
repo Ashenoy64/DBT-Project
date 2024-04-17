@@ -61,11 +61,12 @@ def get_data():
     
 def start_streaming(interval=1):
     global POST_DATA
+    producer = KafkaProducer(bootstrap_servers=KAFAKA_SERVER.split(","),value_serializer=lambda v: json.dumps(v).encode('utf-8'))
     for i in range(len(POST_DATA)):
         time.sleep(interval)
         print("Posting data to Kafka")
-        print(json.dumps(POST_DATA[i],indent=4))
-        break
+        producer.send("reddit",POST_DATA[i])
+        print("Data Posted")
 
 if __name__ == "__main__":
     get_data()
