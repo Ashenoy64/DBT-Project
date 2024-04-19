@@ -21,4 +21,3 @@ while True:
         continue
 
     print('Received message: {}'.format(message.value().decode('utf-8')))
-
