@@ -151,7 +151,7 @@ services:
     image: docker.io/bitnami/spark:3.5
     networks:
       scrape-net: 
-          ipv4_address: 172.14.0.9
+          ipv4_address: 172.14.0.10
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
