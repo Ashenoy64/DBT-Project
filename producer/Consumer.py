@@ -7,7 +7,7 @@ load_dotenv()
 KAFAKA_SERVER = os.getenv('KAFKA_CLUSTER_BOOTSTRAP_SERVERS')
 
 
-consumer = Consumer({'bootstrap.servers': "100.88.89.141:9092,100.88.89.141:9093,100.88.89.141:9094",'group.id': 'reddit', 'auto.offset.reset': 'earliest'})
+consumer = Consumer({'bootstrap.servers': "kafka-1:9092,kafka-2:9093,kafka-3:9094",'group.id': 'reddit', 'auto.offset.reset': 'earliest'})
 
 consumer.subscribe(['reddit'])  
 
