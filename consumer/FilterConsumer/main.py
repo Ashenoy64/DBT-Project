@@ -9,12 +9,16 @@ dotenv.load_dotenv()
 
 
 KAFKA_BROKER = os.getenv("KAFKA_BROKER")
-SPARK_BROKER = os.getenv("SPARK_BROKER")
+SPARK_BROKER = os.getenv("SPARK_BROKER").strip()
 KAFKA_PROCESSED_TOPIC = os.getenv("KAFKA_PROCESSED_TOPIC")
 CHECKPOINT_LOCATION = os.getenv("CHECKPOINT_LOCATION")
 CONSUMER_GROUP=os.getenv("KAFKA_CONSUMER_GROUP")
 KEYWORDS=os.getenv("KEYWORDS").split(",")
-KAFKA_TOPIC = os.getenv("KAFKA_TOPIC")
+KAFKA_TOPIC = os.getenv("KAFKA_TOPICS")
+
+print(KAFKA_TOPIC)
+print(KAFKA_BROKER)
+
 
 # Define the schema for comments
 comment_schema = StructType([
@@ -52,7 +56,7 @@ streaming_df = spark.readStream.format("kafka") \
     .option("kafka.bootstrap.servers", KAFKA_BROKER) \
     .option("subscribe", KAFKA_TOPIC) \
     .option("startingOffsets", "earliest") \
-    .option("groupId", "your_consumer_group_id") \
+    .option("groupId", CONSUMER_GROUP) \
     .load()
 
 # Convert value column to JSON and expand it using the defined schema
@@ -63,7 +67,6 @@ df = json_expanded_df.select("title", "selftext", "url", "score", "authorName", 
 df2 = df.where(
     df['title'].rlike("|".join(["(" + pat + ")" for pat in KEYWORDS]))
 )
-
 
 df2.selectExpr("to_json(struct(*)) as value").writeStream \
         .format("kafka") \

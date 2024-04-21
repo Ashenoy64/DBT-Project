@@ -7,13 +7,13 @@ services:
             context: ./FilterConsumer
 
           environment: 
-              - KAFKA_BROKER= "kafka:19092,kafka:19093,kafka:19094"  
-              - SPARK_BROKER= "spark://spark-master:7077" 
+              - KAFKA_BROKER= kafka-1:19092,kafka-2:19093,kafka-3:19094
+              - SPARK_BROKER= spark://spark-master:7077
               - ENABLE_CHECKPOINT= false 
-              - KAFKA_PROCESSED_TOPIC= "Filtered_Results" 
+              - KAFKA_PROCESSED_TOPIC= Filtered_Results
               - ENABLE_CHECKPOINT= true 
-              - CHECKPOINT_LOCATION= "" 
-              - CONSUMER_GROUP= "filter" 
+              - CHECKPOINT_LOCATION= /tmp/checkpoint
+              - CONSUMER_GROUP= filter
               - KEYWORDS= ${KEYWORDS}
               - KAFKA_TOPICS= ${KAFKA_TOPICS}
           networks:

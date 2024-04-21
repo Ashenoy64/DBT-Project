@@ -1,5 +1,6 @@
 # from confluent_kafka import Producer
 from kafka import KafkaProducer
+from kafka.admin import KafkaAdminClient, NewTopic
 import praw
 import os
 from dotenv import load_dotenv
@@ -16,7 +17,7 @@ CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
 CLIENT_SECRET = os.getenv('REDDIT_CLIENT_SECRET')
 USER_AGENT = os.getenv('REDDIT_USER_AGENT')
 USER_CONFIG=json.loads(os.getenv('USER_CONFIG'))
-
+SUBREDDIT=os.getenv("SUBREDDIT")
 POST_DATA = []
 
 
@@ -55,6 +56,7 @@ def get_data(SUBREDDIT,SORT_BY="hot", LIMIT=10):
     elif SORT_BY == "rising":
         POSTS = reddit.subreddit(SUBREDDIT).rising(limit=None if LIMIT <= 0 else LIMIT)
 
+    print(POSTS)
     for post in tqdm.tqdm(POSTS, desc="Getting Data"):
         _comments = get_comments(post.comments)
         post_data = {
@@ -75,24 +77,36 @@ def get_data(SUBREDDIT,SORT_BY="hot", LIMIT=10):
     
 def start_streaming(INTERVAL=10):
     global POST_DATA
+    print(INTERVAL)
     producer = KafkaProducer(bootstrap_servers=KAFAKA_SERVER.split(","),value_serializer=lambda v: json.dumps(v).encode('utf-8'))
     print("Starting Streaming")
     for i in range(len(POST_DATA)):
-        time.sleep(INTERVAL)
+        
         print("Posting data to Kafka")
-        producer.send("reddit",POST_DATA[i])
+        producer.send(SUBREDDIT,POST_DATA[i])
         print("Data Posted")
+        time.sleep(INTERVAL)
 
 
 
 if __name__ == "__main__":
+    admin_client = KafkaAdminClient(
+    bootstrap_servers=KAFAKA_SERVER
+)
+    try:
+        admin_client.create_topics(new_topics=[NewTopic(name=SUBREDDIT, num_partitions=3, replication_factor=3)], validate_only=False)
+    except:
+        pass
     if(USER_CONFIG['subreddit'] == ""):
         print("Please provide a subreddit")
         exit(1)
     if USER_CONFIG['timeFrame'] == "":
         print("Please provide a time frame")
         exit(1)
-    get_data(USER_CONFIG['subreddit'],USER_CONFIG['sort'],USER_CONFIG['limit'])
+
+    print(SUBREDDIT)
+    print("Started producer")
+    get_data(SUBREDDIT,USER_CONFIG['sort'],USER_CONFIG['limit'])
     print("Done Getting Data")
 
     start_streaming(int(USER_CONFIG['timeFrame']))

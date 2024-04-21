@@ -9,7 +9,7 @@ KAFAKA_SERVER = os.getenv('KAFKA_CLUSTER_BOOTSTRAP_SERVERS')
 
 consumer = Consumer({'bootstrap.servers': "localhost:9092,localhost:9093,localhost:9094",'group.id': 'reddit', 'auto.offset.reset': 'earliest'})
 
-consumer.subscribe(['proc'])  
+consumer.subscribe(['worldnews','news'])  
 
 while True:
     message = consumer.poll(1.0)
