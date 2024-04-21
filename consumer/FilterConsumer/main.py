@@ -3,20 +3,18 @@ from pyspark.sql.functions import *
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, TimestampType, ArrayType
 from pyspark.sql.functions import from_json
 import os
-from kafka import KafkaConsumer
+import dotenv
+
+dotenv.load_dotenv()
 
 
-KAFKA_BROKER = os.getenv("KAFKA_BROKER").split(",")
+KAFKA_BROKER = os.getenv("KAFKA_BROKER")
 SPARK_BROKER = os.getenv("SPARK_BROKER")
 KAFKA_PROCESSED_TOPIC = os.getenv("KAFKA_PROCESSED_TOPIC")
 CHECKPOINT_LOCATION = os.getenv("CHECKPOINT_LOCATION")
 CONSUMER_GROUP=os.getenv("KAFKA_CONSUMER_GROUP")
-
-
-kafka_client=KafkaConsumer(group_id=CONSUMER_GROUP,bootstrap_servers=KAFKA_BROKER)
-
 KEYWORDS=os.getenv("KEYWORDS").split(",")
-KAFKA_TOPIC =kafka_client.topics()
+KAFKA_TOPIC = os.getenv("KAFKA_TOPIC")
 
 # Define the schema for comments
 comment_schema = StructType([
@@ -63,7 +61,7 @@ json_expanded_df = json_df.withColumn("value", from_json(json_df["value"], post_
 df = json_expanded_df.select("title", "selftext", "url", "score", "authorName", "id", "created_utc", "permalink", "ups", "downs", "num_comments", "comments")
 
 df2 = df.where(
-    df['selftext'].rlike("|".join(["(" + pat + ")" for pat in KEYWORDS]))
+    df['title'].rlike("|".join(["(" + pat + ")" for pat in KEYWORDS]))
 )
 
 
