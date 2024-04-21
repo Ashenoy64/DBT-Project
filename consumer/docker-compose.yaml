@@ -15,6 +15,7 @@ services:
               - CHECKPOINT_LOCATION= "" 
               - CONSUMER_GROUP= "filter" 
               - KEYWORDS= ${KEYWORDS}
+              - KAFKA_TOPICS= ${KAFKA_TOPICS}
           networks:
             - scrape-net 
 
