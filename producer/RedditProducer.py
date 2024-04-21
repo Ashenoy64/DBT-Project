@@ -15,38 +15,54 @@ KAFAKA_SERVER = os.getenv('KAFKA_CLUSTER_BOOTSTRAP_SERVERS')
 CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
 CLIENT_SECRET = os.getenv('REDDIT_CLIENT_SECRET')
 USER_AGENT = os.getenv('REDDIT_USER_AGENT')
-SUBREDDIT = os.getenv('REDDIT_SUBREDDIT')
-USER_CONFIG=os.getenv('USER_CONFIG')
+USER_CONFIG=json.loads(os.getenv('USER_CONFIG'))
 
-
-print(KAFAKA_SERVER)
 POST_DATA = []
 
-def get_data():
+
+def get_comments(comments):
+    _comments = []
+    for comment in comments:
+        if isinstance(comment, praw.models.MoreComments):
+            continue  # Skip MoreComments objects
+        comment_data = {
+            "body": comment.body if comment.body else "Deleted",
+            "score": comment.score,
+            "created_utc": comment.created_utc,
+            "id": comment.id,
+            "permalink": comment.permalink,
+            "ups": comment.ups,
+            "downs": comment.downs,
+            "author": comment.author.name if comment.author else "Deleted",
+        }
+        _comments.append(comment_data)
+    return _comments
+
+def get_data(SUBREDDIT,SORT_BY="hot", LIMIT=10):
     global POST_DATA
     reddit = praw.Reddit(client_id=CLIENT_ID, client_secret=CLIENT_SECRET, user_agent=USER_AGENT)
-    HOT_POSTS = reddit.subreddit(SUBREDDIT).hot()
-    for post in tqdm.tqdm(list(HOT_POSTS),total=len(list(HOT_POSTS)),desc="Getting Data"):
-        _comments =[]
-        for comment in post.comments:
-            comment_data = {
-                "body": comment.body,
-                "score": comment.score,
-                "created_utc": comment.created_utc,
-                "id": comment.id,
-                "permalink": comment.permalink,
-                "ups": comment.ups,
-                "downs": comment.downs,
-                "author": comment.author.name if comment.author else "Deleted",
 
-            }
-            _comments.append(comment_data)
+    POSTS = None
+
+    if SORT_BY == "hot":
+        POSTS = reddit.subreddit(SUBREDDIT).hot(limit=None if LIMIT <= 0 else LIMIT)
+    elif SORT_BY == "top":
+        POSTS = reddit.subreddit(SUBREDDIT).top(limit=None if LIMIT <= 0 else LIMIT)
+    elif SORT_BY == "new":
+        POSTS = reddit.subreddit(SUBREDDIT).new(limit=None if LIMIT <= 0 else LIMIT)
+    elif SORT_BY == "controversial":
+        POSTS = reddit.subreddit(SUBREDDIT).controversial(limit=None if LIMIT <= 0 else LIMIT)
+    elif SORT_BY == "rising":
+        POSTS = reddit.subreddit(SUBREDDIT).rising(limit=None if LIMIT <= 0 else LIMIT)
+
+    for post in tqdm.tqdm(POSTS, desc="Getting Data"):
+        _comments = get_comments(post.comments)
         post_data = {
             "title": post.title,
-            "selftext": "Hello world this is a test post",
+            "selftext": post.selftext,
             "url": post.url,
             "score": post.score,
-            "authorName": post.author.name,
+            "authorName": post.author.name if post.author else "Deleted",
             "id": post.id,
             "created_utc": post.created_utc,
             "permalink": post.permalink,
@@ -56,22 +72,30 @@ def get_data():
             "comments": _comments,
         }
         POST_DATA.append(post_data)
-
     
-def start_streaming():
+def start_streaming(INTERVAL=10):
     global POST_DATA
     producer = KafkaProducer(bootstrap_servers=KAFAKA_SERVER.split(","),value_serializer=lambda v: json.dumps(v).encode('utf-8'))
     print("Starting Streaming")
     for i in range(len(POST_DATA)):
-        time.sleep(int(INTERVAL))
+        time.sleep(INTERVAL)
         print("Posting data to Kafka")
         producer.send("reddit",POST_DATA[i])
         print("Data Posted")
 
+
+
 if __name__ == "__main__":
-    get_data()
+    if(USER_CONFIG['subreddit'] == ""):
+        print("Please provide a subreddit")
+        exit(1)
+    if USER_CONFIG['timeFrame'] == "":
+        print("Please provide a time frame")
+        exit(1)
+    get_data(USER_CONFIG['subreddit'],USER_CONFIG['sort'],USER_CONFIG['limit'])
     print("Done Getting Data")
-    start_streaming()
+
+    start_streaming(int(USER_CONFIG['timeFrame']))
     pass
 
 
