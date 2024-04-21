@@ -43,13 +43,12 @@ def get_data():
             _comments.append(comment_data)
         post_data = {
             "title": post.title,
-            "selftext": post.selftext,
+            "selftext": "Hello world this is a test post",
             "url": post.url,
             "score": post.score,
             "authorName": post.author.name,
             "id": post.id,
             "created_utc": post.created_utc,
-            "comments": post.comments,
             "permalink": post.permalink,
             "ups": post.ups,
             "downs": post.downs,
@@ -59,11 +58,12 @@ def get_data():
         POST_DATA.append(post_data)
 
     
-def start_streaming(interval=1):
+def start_streaming():
     global POST_DATA
     producer = KafkaProducer(bootstrap_servers=KAFAKA_SERVER.split(","),value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+    print("Starting Streaming")
     for i in range(len(POST_DATA)):
-        time.sleep(interval)
+        time.sleep(int(INTERVAL))
         print("Posting data to Kafka")
         producer.send("reddit",POST_DATA[i])
         print("Data Posted")
