@@ -3,14 +3,20 @@ from pyspark.sql.functions import *
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, TimestampType, ArrayType
 from pyspark.sql.functions import from_json
 import os
+from kafka import KafkaConsumer
 
 
-KAFKA_BROKER = os.getenv("KAFKA_BROKER")
+KAFKA_BROKER = os.getenv("KAFKA_BROKER").split(",")
 SPARK_BROKER = os.getenv("SPARK_BROKER")
-KAFKA_TOPIC = os.getenv("KAFKA_TOPIC")
 KAFKA_PROCESSED_TOPIC = os.getenv("KAFKA_PROCESSED_TOPIC")
 CHECKPOINT_LOCATION = os.getenv("CHECKPOINT_LOCATION")
+CONSUMER_GROUP=os.getenv("KAFKA_CONSUMER_GROUP")
+
+
+kafka_client=KafkaConsumer(group_id=CONSUMER_GROUP,bootstrap_servers=KAFKA_BROKER)
+
 KEYWORDS=os.getenv("KEYWORDS").split(",")
+KAFKA_TOPIC =kafka_client.topics()
 
 # Define the schema for comments
 comment_schema = StructType([
@@ -48,6 +54,7 @@ streaming_df = spark.readStream.format("kafka") \
     .option("kafka.bootstrap.servers", KAFKA_BROKER) \
     .option("subscribe", KAFKA_TOPIC) \
     .option("startingOffsets", "earliest") \
+    .option("groupId", "your_consumer_group_id") \
     .load()
 
 # Convert value column to JSON and expand it using the defined schema

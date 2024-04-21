@@ -1,2 +1,3 @@
-dotenv
+python-dotenv
+kafka-python-ng
 pyspark

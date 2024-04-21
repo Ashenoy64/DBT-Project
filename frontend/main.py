@@ -1,6 +1,6 @@
 import streamlit as st
 from backend import start_producers
-
+import json
 def start():
     
     if 'data' not in st.session_state:
@@ -68,7 +68,7 @@ def start():
 
         if st.button("Submit"):
              print("Starting producers")
-             start_producers(st.session_state.data["subreddit"],st.session_state.data["sort"],["happy","sad"])
+             start_producers(st.session_state.data)
 
 
 if __name__ == '__main__':

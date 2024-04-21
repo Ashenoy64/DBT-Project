@@ -1,55 +1,30 @@
-version: "3"
+version: "3.7"
 
 services:
 
       filter-1: 
           build: 
-            context: ./filter_consumer 
+            context: ./FilterConsumer
 
           environment: 
-              - KAFKA_CLUSTER_BOOTSTRAP_SERVERS= "kafka:19092,kafka:19093,kafka:19094"  
+              - KAFKA_BROKER= "kafka:19092,kafka:19093,kafka:19094"  
+              - SPARK_BROKER= "spark://spark-master:7077" 
               - ENABLE_CHECKPOINT= false 
               - KAFKA_PROCESSED_TOPIC= "Filtered_Results" 
               - ENABLE_CHECKPOINT= true 
               - CHECKPOINT_LOCATION= "" 
-              - CONSUMER_GROUP= "filter"
+              - CONSUMER_GROUP= "filter" 
+              - KEYWORDS= ${KEYWORDS}
           networks:
-            - scrape-net
-
-      filter-2: 
-          build: 
-            context: ./filter_consumer 
-
-          environment: 
-              - KAFKA_CLUSTER_BOOTSTRAP_SERVERS= "kafka:19092,kafka:19093,kafka:19094"  
-              - ENABLE_CHECKPOINT= false 
-              - KAFKA_PROCESSED_TOPIC= "Filtered_Results" 
-              - ENABLE_CHECKPOINT= true 
-              - CHECKPOINT_LOCATION= "" 
-              - CONSUMER_GROUP= "filter"              
-          networks:
-            - scrape-net
-
-      filter-3: 
-          build: 
-            context: ./filter_consumer 
-
-          environment: 
-              - KAFKA_CLUSTER_BOOTSTRAP_SERVERS= "kafka:19092,kafka:19093,kafka:19094"  
-              - ENABLE_CHECKPOINT= false 
-              - KAFKA_PROCESSED_TOPIC= "Filtered_Results" 
-              - ENABLE_CHECKPOINT= true 
-              - CHECKPOINT_LOCATION= "" 
-              - CONSUMER_GROUP= "filter"
-          networks:
-            - scrape-net
+            - scrape-net 
 
       database-consumer:
           build:
             context: ./database_consumer
 
           environment:
-              - KAFKA_CLUSTER_BOOTSTRAP_SERVERS= "kafka:19092,kafka:19093,kafka:19094"
+              - KAFKA_BROKER= "kafka:19092,kafka:19093,kafka:19094"
+              - SPARK_BROKER= "spark://spark-master:7077"
               - KAFKA_PROCESSED_TOPIC= "Filtered_Results"
               - DATABASE_HOST= "db"
               - DATABASE_PORT= "5432"
