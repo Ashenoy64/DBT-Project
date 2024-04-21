@@ -1,0 +1,2 @@
+docker cp -L main.py dbt_spark-master-1:/opt/bitnami/spark/main.py
+docker-compose exec spark-master spark-submit --master spark://172.18.0.2:7077 --packages org.apache.spark:spark-streaming-kafka-0-10_2.12:3.2.0 main.py

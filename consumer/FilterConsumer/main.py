@@ -4,12 +4,13 @@ from pyspark.sql.types import StructType, StructField, StringType, IntegerType, 
 from pyspark.sql.functions import from_json
 import os
 
-# Assuming you have loaded environment variables elsewhere
+
 KAFKA_BROKER = os.getenv("KAFKA_BROKER")
+SPARK_BROKER = os.getenv("SPARK_BROKER")
 KAFKA_TOPIC = os.getenv("KAFKA_TOPIC")
 KAFKA_PROCESSED_TOPIC = os.getenv("KAFKA_PROCESSED_TOPIC")
-ENABLE_CHECKPOINT = os.getenv("ENABLE_CHECKPOINT")
 CHECKPOINT_LOCATION = os.getenv("CHECKPOINT_LOCATION")
+KEYWORDS=os.getenv("KEYWORDS").split(",")
 
 # Define the schema for comments
 comment_schema = StructType([
@@ -40,7 +41,7 @@ post_schema = StructType([
 ])
 
 # Create a SparkSession
-spark = SparkSession.builder.master("spark://spark-master:7077").appName("RedditDataAnalysis").getOrCreate()
+spark = SparkSession.builder.master(SPARK_BROKER).appName("RedditDataAnalysis").getOrCreate()
 
 # Read streaming data from Kafka
 streaming_df = spark.readStream.format("kafka") \
@@ -52,31 +53,18 @@ streaming_df = spark.readStream.format("kafka") \
 # Convert value column to JSON and expand it using the defined schema
 json_df = streaming_df.selectExpr("cast(value as string) as value")
 json_expanded_df = json_df.withColumn("value", from_json(json_df["value"], post_schema)).select("value.*") 
+df = json_expanded_df.select("title", "selftext", "url", "score", "authorName", "id", "created_utc", "permalink", "ups", "downs", "num_comments", "comments")
 
-
-
-filtered_df = json_expanded_df.filter(
-    expr("exists(title, x -> array_contains(split(lower(title), ' '), x)) or " +
-         "exists(selftext, x -> array_contains(split(lower(selftext), ' '), x))"
-    ).alias("post")
+df2 = df.where(
+    df['selftext'].rlike("|".join(["(" + pat + ")" for pat in KEYWORDS]))
 )
 
-# Print the schema of the DataFrame
 
-if ENABLE_CHECKPOINT:
-    filtered_df.selectExpr("to_json(struct(*)) as value").writeStream \
+df2.selectExpr("to_json(struct(*)) as value").writeStream \
         .format("kafka") \
         .option("kafka.bootstrap.servers", KAFKA_BROKER) \
         .option("topic", KAFKA_PROCESSED_TOPIC) \
         .option("checkpointLocation", CHECKPOINT_LOCATION) \
-        .start() \
-        .awaitTermination()
-else:
-    filtered_df.selectExpr("to_json(struct(*)) as value") \
-        .writeStream \
-        .format("kafka") \
-        .option("kafka.bootstrap.servers", KAFKA_BROKER) \
-        .option("topic", KAFKA_PROCESSED_TOPIC) \
         .start() \
         .awaitTermination()
 
