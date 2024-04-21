@@ -14,12 +14,12 @@ load_dotenv()
 KAFAKA_SERVER = os.getenv('KAFKA_CLUSTER_BOOTSTRAP_SERVERS')
 CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
 CLIENT_SECRET = os.getenv('REDDIT_CLIENT_SECRET')
-USER_AGENT = os.getenv('REDDIT_USER_AGENT')    
+USER_AGENT = os.getenv('REDDIT_USER_AGENT')
 SUBREDDIT = os.getenv('REDDIT_SUBREDDIT')
 INTERVAL = os.getenv('INTERVAL')
 
 
-
+print(KAFAKA_SERVER)
 POST_DATA = []
 
 def get_data():

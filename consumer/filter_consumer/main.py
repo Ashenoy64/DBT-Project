@@ -5,11 +5,12 @@ from pyspark.sql.functions import from_json
 import os
 
 # Assuming you have loaded environment variables elsewhere
-KAFKA_BROKER = os.getenv("KAFKA_BROKER")
+KAFKA_BROKER = os.getenv("KAFKA_CLUSTER_BOOTSTRAP_SERVERS")
 KAFKA_TOPIC = os.getenv("KAFKA_TOPIC")
 KAFKA_PROCESSED_TOPIC = os.getenv("KAFKA_PROCESSED_TOPIC")
 ENABLE_CHECKPOINT = os.getenv("ENABLE_CHECKPOINT")
 CHECKPOINT_LOCATION = os.getenv("CHECKPOINT_LOCATION")
+KAFKA_CONSUMER_GROUP=os.getenv("KAFKA_CONSUMER_GROUP")
 
 # Define the schema for comments
 comment_schema = StructType([
@@ -40,7 +41,7 @@ post_schema = StructType([
 ])
 
 # Create a SparkSession
-spark = SparkSession.builder.master("spark://spark-master:7077").appName("RedditDataAnalysis").getOrCreate()
+spark = SparkSession.builder.master("spark://172.14.0.8:7077").appName("RedditDataAnalysis").getOrCreate()
 
 # Read streaming data from Kafka
 streaming_df = spark.readStream.format("kafka") \

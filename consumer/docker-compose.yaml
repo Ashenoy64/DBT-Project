@@ -1,0 +1,63 @@
+version: "3"
+
+services:
+
+      filter-1: 
+          build: 
+            context: ./filter_consumer 
+
+          environment: 
+              - KAFKA_CLUSTER_BOOTSTRAP_SERVERS= "kafka:19092,kafka:19093,kafka:19094"  
+              - ENABLE_CHECKPOINT= false 
+              - KAFKA_PROCESSED_TOPIC= "Filtered_Results" 
+              - ENABLE_CHECKPOINT= true 
+              - CHECKPOINT_LOCATION= "" 
+              - CONSUMER_GROUP= "filter"
+          networks:
+            - scrape-net
+
+      filter-2: 
+          build: 
+            context: ./filter_consumer 
+
+          environment: 
+              - KAFKA_CLUSTER_BOOTSTRAP_SERVERS= "kafka:19092,kafka:19093,kafka:19094"  
+              - ENABLE_CHECKPOINT= false 
+              - KAFKA_PROCESSED_TOPIC= "Filtered_Results" 
+              - ENABLE_CHECKPOINT= true 
+              - CHECKPOINT_LOCATION= "" 
+              - CONSUMER_GROUP= "filter"              
+          networks:
+            - scrape-net
+
+      filter-3: 
+          build: 
+            context: ./filter_consumer 
+
+          environment: 
+              - KAFKA_CLUSTER_BOOTSTRAP_SERVERS= "kafka:19092,kafka:19093,kafka:19094"  
+              - ENABLE_CHECKPOINT= false 
+              - KAFKA_PROCESSED_TOPIC= "Filtered_Results" 
+              - ENABLE_CHECKPOINT= true 
+              - CHECKPOINT_LOCATION= "" 
+              - CONSUMER_GROUP= "filter"
+          networks:
+            - scrape-net
+
+      database-consumer:
+          build:
+            context: ./database_consumer
+
+          environment:
+              - KAFKA_CLUSTER_BOOTSTRAP_SERVERS= "kafka:19092,kafka:19093,kafka:19094"
+              - KAFKA_PROCESSED_TOPIC= "Filtered_Results"
+              - DATABASE_HOST= "db"
+              - DATABASE_PORT= "5432"
+              - DATABASE_USER= "root"
+              - DATABASE_PASSWORD= "password"
+              - DATABASE_DB= "DBT"
+
+networks:
+  scrape-net:
+    name: scrape-net
+    external: true
