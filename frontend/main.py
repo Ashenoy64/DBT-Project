@@ -1,5 +1,5 @@
 import streamlit as st
-
+from backend import start_producers
 
 def start():
     
@@ -47,7 +47,7 @@ def start():
             with col1:
                 if st.button("Add Keyword"):
                     if keyword and keyword not in data["subreddit"]:
-                        data["subreddit"].append(keyword)
+                        data["sentimentKeyWord"].append(keyword)
                         st.session_state.data = data
 
             with col2:
@@ -66,7 +66,9 @@ def start():
         data["sort"] = st.selectbox("Sort", ["top", "hot", "new", "controversial", "rising"])
         st.session_state.data = data   
 
-          
+        if st.button("Submit"):
+             print("Starting producers")
+             start_producers(st.session_state.data["subreddit"],st.session_state.data["sort"],["happy","sad"])
 
 
 if __name__ == '__main__':
