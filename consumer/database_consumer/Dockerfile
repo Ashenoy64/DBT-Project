@@ -6,4 +6,5 @@ COPY . .
 
 RUN ["pip","install","-r","requirements.txt"]
 
-CMD ["python","RedditProducer.py"]
+CMD ["python","main.py"]
+
