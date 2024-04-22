@@ -6,7 +6,7 @@ from json import loads
 DB_CON = None
 
 CONSUMER = None
-TOPIC = argv[1]
+TOPIC = "Filtered_Results" 
 
 def init_db():
 	global DB_CON
@@ -38,7 +38,8 @@ def insert_post(post, topic):
 	cur = DB_CON.cursor()
 	
 	q = """
-		INSERT into reddit_post (reddit_id, title, selftext, subreddit, created) values (?, ?, ?, ?, ?);
+		INSERT into reddit_post (reddit_id, title, selftext, subreddit, created, comments, num_comments, ups, downs) values (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
 	"""
 	try:
 		cur.execute(q, (post["id"], post["title"], post["selftext"], topic, post["created"]))
@@ -58,10 +59,13 @@ def create_table():
 			local_id integer primary key autoincrement,
 			reddit_id varchar(256),
 			title varchar(256),
-			selftext varchar(2000),	
+			selftext varchar(Max),	
 			subreddit varchar(200),
-			created varchar(100)
-		);
+			created varchar(100),
+			comments varchar(Max),
+			num_comments integer,
+			ups integer,
+			downs integer
 	"""
 	cur.execute(q)
 	print(f"[LOG] Creating/Using table reddit_post")
