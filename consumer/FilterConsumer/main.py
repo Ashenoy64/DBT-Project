@@ -45,7 +45,6 @@ post_schema = StructType([
     StructField("ups", IntegerType(), nullable=True),
     StructField("downs", IntegerType(), nullable=True),
     StructField("num_comments", IntegerType(), nullable=True),
-    StructField("comments", ArrayType(comment_schema), nullable=True)
 ])
 
 # Create a SparkSession
@@ -62,13 +61,11 @@ streaming_df = spark.readStream.format("kafka") \
 # Convert value column to JSON and expand it using the defined schema
 json_df = streaming_df.selectExpr("cast(value as string) as value")
 json_expanded_df = json_df.withColumn("value", from_json(json_df["value"], post_schema)).select("value.*") 
-df = json_expanded_df.select("title", "selftext", "url", "score", "authorName", "id", "created_utc", "permalink", "ups", "downs", "num_comments", "comments")
-
-df2 = df.where(
-    df['title'].rlike("|".join(["(" + pat + ")" for pat in KEYWORDS]))
+df = json_expanded_df.where(
+    json_expanded_df['title'].rlike("|".join(["(" + pat + ")" for pat in KEYWORDS]))
 )
 
-df2.selectExpr("to_json(struct(*)) as value").writeStream \
+df.selectExpr("to_json(struct(*)) as value").writeStream \
         .format("kafka") \
         .option("kafka.bootstrap.servers", KAFKA_BROKER) \
         .option("topic", KAFKA_PROCESSED_TOPIC) \

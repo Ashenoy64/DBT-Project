@@ -58,7 +58,6 @@ def get_data(SUBREDDIT,SORT_BY="hot", LIMIT=10):
 
     print(POSTS)
     for post in tqdm.tqdm(POSTS, desc="Getting Data"):
-        _comments = get_comments(post.comments)
         post_data = {
             "title": post.title,
             "selftext": post.selftext,
@@ -71,9 +70,9 @@ def get_data(SUBREDDIT,SORT_BY="hot", LIMIT=10):
             "ups": post.ups,
             "downs": post.downs,
             "num_comments": post.num_comments,
-            "comments": _comments,
         }
         POST_DATA.append(post_data)
+        print("UTC ",)
     
 def start_streaming(INTERVAL=10):
     global POST_DATA
