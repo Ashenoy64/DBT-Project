@@ -16,7 +16,7 @@ def init_db():
 def init_consumer():
 	global CONSUMER
 	print(f"[LOG] Creating database consumer!")
-	CONSUMER = KafkaConsumer(bootstrap_servers="localhost:9092")
+	CONSUMER = KafkaConsumer(bootstrap_servers="localhost:9092,localhost:9093,localhost:9094")
 	print(f"[LOG] Subscribing to {TOPIC}")
 	CONSUMER.subscribe([TOPIC])
 	print(f"[LOG] Consumer ready!")
@@ -38,11 +38,11 @@ def insert_post(post, topic):
 	cur = DB_CON.cursor()
 	
 	q = """
-		INSERT into reddit_post (reddit_id, title, selftext, subreddit, created, num_comments, ups, downs) values (?, ?, ?, ?, ?, ?, ?, ?);
+		INSERT into reddit_post (reddit_id, title, selftext, subreddit, num_comments, ups, downs) values ( ?, ?, ?, ?, ?, ?, ?);
 
 	"""
 	try:
-		cur.execute(q, (post["id"], post["title"], post["selftext"], topic, post["created"], post["num_comments"], post["ups"], post["downs"]))
+		cur.execute(q, (post["id"], post["title"], post["selftext"], topic, post["num_comments"], post["ups"], post["downs"]))
 		DB_CON.commit()
 		print(f"[LOG] Added post with id={post['id']} to db")
 	except Exception as err:
@@ -61,7 +61,6 @@ def create_table():
 			title varchar(256),
 			selftext varchar(2000),	
 			subreddit varchar(200),
-			created varchar(100),
 			num_comments integer,
 			ups integer,
 			downs integer
