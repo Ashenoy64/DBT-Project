@@ -1,4 +1,0 @@
-python-dotenv
-kafka-python-ng
-tqdm
-psycopg2-binary
