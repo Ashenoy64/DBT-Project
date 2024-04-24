@@ -68,7 +68,6 @@ def process_batch(delay):
             StructField("title", StringType(), nullable=True),
             StructField("selftext", StringType(), nullable=True),
             StructField("subreddit", StringType(), True),
-            StructField("created", StringType(), nullable=True),
             StructField("num_comments", IntegerType(), True),
             StructField("ups", IntegerType(), True),
             StructField("downs", IntegerType(), True)
