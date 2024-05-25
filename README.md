@@ -8,7 +8,6 @@ Welcome to the Reddit Analysis Project! This project is designed to perform real
 - [Prerequisites](#prerequisites)
 - [Setup](#setup)
 - [Usage](#usage)
-- [Contributing](#contributing)
 - [License](#license)
 
 ## Overview
